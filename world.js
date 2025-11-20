@@ -7,6 +7,8 @@ const ROAD_WIDTH = 10
 const CITY_OFFSET = ((GRID_SIZE * (BLOCK_SIZE + ROAD_WIDTH)) - ROAD_WIDTH) / 2
 
 export function createWorld(scene) {
+  const collidables = []
+
   // Ground (Base layer)
   const groundGeometry = new THREE.PlaneGeometry(400, 400)
   const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x2b2b2b }) // Darker base
@@ -16,10 +18,12 @@ export function createWorld(scene) {
   ground.receiveShadow = true
   scene.add(ground)
 
-  createCityGrid(scene)
+  createCityGrid(scene, collidables)
+  
+  return collidables
 }
 
-function createCityGrid(scene) {
+function createCityGrid(scene, collidables) {
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
       // Calculate center position of this block
@@ -28,11 +32,11 @@ function createCityGrid(scene) {
 
       // Determine Block Type
       if (x === 2 && z === 2) {
-        createDarkStore(scene, xPos, zPos)
+        createDarkStore(scene, xPos, zPos, collidables)
       } else if ((x === 1 && z === 1) || (x === 3 && z === 3) || (x === 1 && z === 3) || (x === 3 && z === 1)) {
-        createPark(scene, xPos, zPos)
+        createPark(scene, xPos, zPos, collidables)
       } else {
-        createResidentialBlock(scene, xPos, zPos)
+        createResidentialBlock(scene, xPos, zPos, collidables)
       }
     }
   }
@@ -65,7 +69,7 @@ function createGridRoads(scene) {
   }
 }
 
-function createDarkStore(scene, x, z) {
+function createDarkStore(scene, x, z, collidables) {
   // Plot Base
   const baseGeo = new THREE.BoxGeometry(BLOCK_SIZE, 1, BLOCK_SIZE)
   const baseMat = new THREE.MeshStandardMaterial({ color: 0x555555 })
@@ -73,6 +77,7 @@ function createDarkStore(scene, x, z) {
   base.position.set(x, 0.5, z)
   base.receiveShadow = true
   scene.add(base)
+  collidables.push(base)
 
   // Main Building
   const buildingGeo = new THREE.BoxGeometry(BLOCK_SIZE * 0.8, 12, BLOCK_SIZE * 0.6)
@@ -82,6 +87,7 @@ function createDarkStore(scene, x, z) {
   building.castShadow = true
   building.receiveShadow = true
   scene.add(building)
+  collidables.push(building)
 
   // Roof Details (Simple)
   const roofGeo = new THREE.BoxGeometry(BLOCK_SIZE * 0.85, 0.5, BLOCK_SIZE * 0.65)
@@ -89,6 +95,7 @@ function createDarkStore(scene, x, z) {
   const roof = new THREE.Mesh(roofGeo, roofMat)
   roof.position.set(x, 12.75, z)
   scene.add(roof)
+  collidables.push(roof)
 
   // Signage Text (Simulated with a bright box for now)
   const signGeo = new THREE.BoxGeometry(10, 2, 1)
@@ -96,9 +103,10 @@ function createDarkStore(scene, x, z) {
   const sign = new THREE.Mesh(signGeo, signMat)
   sign.position.set(x, 10, z + (BLOCK_SIZE * 0.3) + 0.6)
   scene.add(sign)
+  collidables.push(sign)
 }
 
-function createResidentialBlock(scene, x, z) {
+function createResidentialBlock(scene, x, z, collidables) {
   // Plot Grass
   const plotGeo = new THREE.PlaneGeometry(BLOCK_SIZE, BLOCK_SIZE)
   const plotMat = new THREE.MeshStandardMaterial({ color: 0x4a6b4a }) // Muted Green
@@ -132,12 +140,13 @@ function createResidentialBlock(scene, x, z) {
     building.castShadow = true
     building.receiveShadow = true
     scene.add(building)
+    collidables.push(building)
 
     // Windows (Texture simulation with simple geometry if needed, skipping for perf for now)
   })
 }
 
-function createPark(scene, x, z) {
+function createPark(scene, x, z, collidables) {
   // Park Grass
   const parkGeo = new THREE.BoxGeometry(BLOCK_SIZE, 0.5, BLOCK_SIZE)
   const parkMat = new THREE.MeshStandardMaterial({ color: 0x228B22 }) // Forest Green
@@ -145,6 +154,7 @@ function createPark(scene, x, z) {
   park.position.set(x, 0.25, z)
   park.receiveShadow = true
   scene.add(park)
+  collidables.push(park)
 
   // Trees
   const trunkGeo = new THREE.CylinderGeometry(0.3, 0.3, 1.5)
@@ -161,12 +171,14 @@ function createPark(scene, x, z) {
     trunk.castShadow = true
     trunk.receiveShadow = true
     scene.add(trunk)
+    collidables.push(trunk)
 
     const leaves = new THREE.Mesh(leavesGeo, leavesMat)
     leaves.position.set(tx, 3, tz)
     leaves.castShadow = true
     leaves.receiveShadow = true
     scene.add(leaves)
+    collidables.push(leaves)
   }
 }
 

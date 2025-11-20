@@ -1,16 +1,17 @@
 import * as THREE from 'three';
 
 export class Drone {
-    constructor() {
+    constructor(collidables = []) {
+        this.collidables = collidables;
         this.mesh = new THREE.Group();
         this.velocity = new THREE.Vector3();
         this.acceleration = new THREE.Vector3();
         this.rotationVelocity = 0;
         
         // Physics constants
-        this.speed = 20;
-        this.lift = 30;
-        this.rotationSpeed = 2;
+        this.speed = 50; // Increased from 20
+        this.lift = 60; // Increased from 30
+        this.rotationSpeed = 2; // Increased from 2
         this.damping = 0.95;
         this.gravity = 9.8;
 
@@ -236,9 +237,25 @@ export class Drone {
         }
     }
 
+    checkCollision(position) {
+        // Adjust box to cover the skids (approx -0.3 below center)
+        // Center at position.y - 0.15, height 0.8 (from +0.25 to -0.55)
+        const boxCenter = position.clone();
+        boxCenter.y -= 0.15;
+        const droneBox = new THREE.Box3().setFromCenterAndSize(boxCenter, new THREE.Vector3(1, 0.8, 1)); 
+
+        for (const object of this.collidables) {
+            const buildingBox = new THREE.Box3().setFromObject(object);
+            if (droneBox.intersectsBox(buildingBox)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     addToScene(scene) {
         scene.add(this.mesh);
-        this.mesh.position.set(0, 2, 0); // Start slightly above ground
+        this.mesh.position.set(0, 14, 0); // Start on top of Dark Store
     }
 
     update(deltaTime) {
@@ -267,10 +284,40 @@ export class Drone {
         this.velocity.add(this.acceleration.clone().multiplyScalar(deltaTime));
         this.velocity.multiplyScalar(this.damping); // Air resistance
 
-        // Position update
-        this.mesh.position.add(this.velocity.clone().multiplyScalar(deltaTime));
+        // Position update - Split into Y and XZ to handle landing better
+        
+        // 1. Try moving XZ
+        const nextPosXZ = this.mesh.position.clone();
+        nextPosXZ.add(new THREE.Vector3(this.velocity.x * deltaTime, 0, this.velocity.z * deltaTime));
+        
+        if (!this.checkCollision(nextPosXZ)) {
+            this.mesh.position.x = nextPosXZ.x;
+            this.mesh.position.z = nextPosXZ.z;
+        } else {
+            this.velocity.x = 0;
+            this.velocity.z = 0;
+        }
 
-        // Floor collision
+        // 2. Try moving Y
+        const nextPosY = this.mesh.position.clone();
+        nextPosY.y += this.velocity.y * deltaTime;
+
+        if (!this.checkCollision(nextPosY)) {
+            this.mesh.position.y = nextPosY.y;
+        } else {
+            // Collision in Y
+            if (this.velocity.y < 0) {
+                // Landing on something
+                this.velocity.y = 0;
+                // Optional: Snap to surface? Hard without raycast. 
+                // Just stop is fine if delta is small.
+            } else {
+                // Hitting ceiling?
+                this.velocity.y = 0;
+            }
+        }
+
+        // Floor collision (Global ground safety)
         if (this.mesh.position.y < 0.5) {
             this.mesh.position.y = 0.5;
             this.velocity.y = Math.max(0, this.velocity.y);

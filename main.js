@@ -34,7 +34,7 @@ dirLight.shadow.mapSize.height = 2048;
 scene.add(dirLight);
 
 // World Generation
-createWorld(scene);
+const collidables = createWorld(scene);
 
 // Packages
 const packages = [];
@@ -67,7 +67,7 @@ function updateScore(points) {
 }
 
 // Drone
-const drone = new Drone();
+const drone = new Drone(collidables);
 drone.addToScene(scene);
 
 // Animation Loop
