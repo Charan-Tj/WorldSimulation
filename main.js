@@ -34,19 +34,22 @@ dirLight.shadow.mapSize.height = 2048;
 scene.add(dirLight);
 
 // World Generation
-const collidables = createWorld(scene);
+const { collidables, dockedDrones, conveyorPackages } = createWorld(scene);
 
 // Packages
 const packages = [];
 window.packages = packages; // Expose for Drone to access
 
-const pkg1 = new Package(scene, new THREE.Vector3(5, 0.5, 5));
+// Add conveyor packages
+packages.push(...conveyorPackages);
+
+const pkg1 = new Package(scene, new THREE.Vector3(5, 0.5, 5), collidables);
 packages.push(pkg1);
 
-const pkg2 = new Package(scene, new THREE.Vector3(-5, 0.5, -5));
+const pkg2 = new Package(scene, new THREE.Vector3(-5, 0.5, -5), collidables);
 packages.push(pkg2);
 
-const pkg3 = new Package(scene, new THREE.Vector3(5, 0.5, -5));
+const pkg3 = new Package(scene, new THREE.Vector3(5, 0.5, -5), collidables);
 packages.push(pkg3);
 
 // Drop Zone
@@ -78,6 +81,9 @@ function animate() {
     
     const deltaTime = Math.min(clock.getDelta(), 0.1); // Cap delta time
     drone.update(deltaTime);
+    
+    // Update docked drones
+    dockedDrones.forEach(d => d.update(deltaTime));
     
     packages.forEach(pkg => {
         pkg.update(deltaTime);

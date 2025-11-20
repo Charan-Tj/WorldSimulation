@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
 export class Drone {
-    constructor(collidables = []) {
+    constructor(collidables = [], isPlayerControlled = true) {
         this.collidables = collidables;
+        this.isPlayerControlled = isPlayerControlled;
         this.mesh = new THREE.Group();
         this.velocity = new THREE.Vector3();
         this.acceleration = new THREE.Vector3();
@@ -30,7 +31,9 @@ export class Drone {
         this.rotors = [];
         
         this.buildDrone();
-        this.setupControls();
+        if (this.isPlayerControlled) {
+            this.setupControls();
+        }
     }
 
     buildDrone() {
@@ -227,6 +230,7 @@ export class Drone {
             const pkg = this.carriedPackage;
             this.carriedPackage = null;
             pkg.isHeld = false;
+            pkg.isStatic = false;
             
             // Detach from drone and re-add to scene
             this.mesh.parent.attach(pkg.mesh);
