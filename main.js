@@ -1,19 +1,21 @@
 import * as THREE from 'three';
 import { Drone } from './src/drone.js';
 import { Package } from './src/package.js';
+import { createWorld } from './world.js';
 
 // Scene setup
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB); // Sky blue
-scene.fog = new THREE.Fog(0x87CEEB, 10, 50);
+scene.fog = new THREE.Fog(0x87CEEB, 10, 150); // Increased fog distance for larger city
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 5, 10);
+camera.position.set(0, 20, 20); // Higher starting position
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 // Lighting
@@ -21,24 +23,18 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
 
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-dirLight.position.set(10, 20, 10);
+dirLight.position.set(50, 100, 50); // Higher light for city
 dirLight.castShadow = true;
-dirLight.shadow.camera.top = 20;
-dirLight.shadow.camera.bottom = -20;
-dirLight.shadow.camera.left = -20;
-dirLight.shadow.camera.right = 20;
+dirLight.shadow.camera.top = 100;
+dirLight.shadow.camera.bottom = -100;
+dirLight.shadow.camera.left = -100;
+dirLight.shadow.camera.right = 100;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
 scene.add(dirLight);
 
-// Ground
-const groundGeometry = new THREE.PlaneGeometry(100, 100);
-const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x33aa33 });
-const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const gridHelper = new THREE.GridHelper(100, 100);
-scene.add(gridHelper);
+// World Generation
+createWorld(scene);
 
 // Packages
 const packages = [];
