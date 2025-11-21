@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import * as CANNON from 'cannon-es'
 import { Drone } from './src/drone.js'
 import { Package } from './src/package.js'
 
@@ -8,10 +9,10 @@ const BLOCK_SIZE = 30
 const ROAD_WIDTH = 10
 const CITY_OFFSET = ((GRID_SIZE * (BLOCK_SIZE + ROAD_WIDTH)) - ROAD_WIDTH) / 2
 
-export function createWorld(scene) {
-  const collidables = []
+export function createWorld(scene, physicsWorld) {
   const dockedDrones = []
   const conveyorPackages = []
+  const deliveryZones = []
 
   // Ground (Base layer)
   const groundGeometry = new THREE.PlaneGeometry(400, 400)
@@ -22,12 +23,21 @@ export function createWorld(scene) {
   ground.receiveShadow = true
   scene.add(ground)
 
-  createCityGrid(scene, collidables, dockedDrones, conveyorPackages)
+  // Ground Physics
+  const groundBody = new CANNON.Body({
+      type: CANNON.Body.STATIC,
+      shape: new CANNON.Plane(),
+  })
+  groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
+  groundBody.position.y = -0.1
+  physicsWorld.addBody(groundBody)
+
+  createCityGrid(scene, physicsWorld, dockedDrones, conveyorPackages, deliveryZones)
   
-  return { collidables, dockedDrones, conveyorPackages }
+  return { dockedDrones, conveyorPackages, deliveryZones }
 }
 
-function createCityGrid(scene, collidables, dockedDrones, conveyorPackages) {
+function createCityGrid(scene, physicsWorld, dockedDrones, conveyorPackages, deliveryZones) {
   for (let x = 0; x < GRID_SIZE; x++) {
     for (let z = 0; z < GRID_SIZE; z++) {
       // Calculate center position of this block
@@ -36,11 +46,11 @@ function createCityGrid(scene, collidables, dockedDrones, conveyorPackages) {
 
       // Determine Block Type
       if (x === 2 && z === 2) {
-        createDarkStore(scene, xPos, zPos, collidables, dockedDrones, conveyorPackages)
+        createDarkStore(scene, physicsWorld, xPos, zPos, dockedDrones, conveyorPackages)
       } else if ((x === 1 && z === 1) || (x === 3 && z === 3) || (x === 1 && z === 3) || (x === 3 && z === 1)) {
-        createPark(scene, xPos, zPos, collidables)
+        createPark(scene, physicsWorld, xPos, zPos)
       } else {
-        createResidentialBlock(scene, xPos, zPos, collidables)
+        createResidentialBlock(scene, physicsWorld, xPos, zPos, deliveryZones)
       }
     }
   }
@@ -73,7 +83,7 @@ function createGridRoads(scene) {
   }
 }
 
-function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackages) {
+function createDarkStore(scene, physicsWorld, x, z, dockedDrones, conveyorPackages) {
   // Plot Base
   const baseGeo = new THREE.BoxGeometry(BLOCK_SIZE, 1, BLOCK_SIZE)
   const baseMat = new THREE.MeshStandardMaterial({ color: 0x555555 })
@@ -81,7 +91,7 @@ function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackage
   base.position.set(x, 0.5, z)
   base.receiveShadow = true
   scene.add(base)
-  collidables.push(base)
+  createStaticBox(physicsWorld, base.position, new THREE.Vector3(BLOCK_SIZE, 1, BLOCK_SIZE))
 
   // Main Building
   const buildingGeo = new THREE.BoxGeometry(BLOCK_SIZE * 0.8, 12, BLOCK_SIZE * 0.6)
@@ -91,7 +101,7 @@ function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackage
   building.castShadow = true
   building.receiveShadow = true
   scene.add(building)
-  collidables.push(building)
+  createStaticBox(physicsWorld, building.position, new THREE.Vector3(BLOCK_SIZE * 0.8, 12, BLOCK_SIZE * 0.6))
 
   // Roof Details (Simple)
   const roofGeo = new THREE.BoxGeometry(BLOCK_SIZE * 0.85, 0.5, BLOCK_SIZE * 0.65)
@@ -99,7 +109,7 @@ function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackage
   const roof = new THREE.Mesh(roofGeo, roofMat)
   roof.position.set(x, 12.75, z)
   scene.add(roof)
-  collidables.push(roof)
+  createStaticBox(physicsWorld, roof.position, new THREE.Vector3(BLOCK_SIZE * 0.85, 0.5, BLOCK_SIZE * 0.65))
 
   // --- ROOF FEATURES ---
 
@@ -111,13 +121,13 @@ function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackage
   const belt = new THREE.Mesh(beltGeo, beltMat);
   belt.position.set(x - 5, 13.1, z); // Offset to left side of roof
   scene.add(belt);
-  collidables.push(belt);
+  createStaticBox(physicsWorld, belt.position, new THREE.Vector3(beltWidth, 0.2, beltLength))
 
   // Packages on Belt
   for(let i = 0; i < 5; i++) {
       const zOffset = (i - 2) * 3; 
       const pos = new THREE.Vector3(x - 5, 13.45, z + zOffset); // 13.1 (belt) + 0.1 (half belt) + 0.25 (half box)
-      const pkg = new Package(scene, pos, collidables);
+      const pkg = new Package(scene, physicsWorld, pos);
       pkg.isStatic = true; // Don't fall through roof
       conveyorPackages.push(pkg);
   }
@@ -125,10 +135,11 @@ function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackage
   // 2. Docked Drones
   // Place them on the right side of the roof
   for(let i = 0; i < 5; i++) {
-      const drone = new Drone(collidables, false); // false = not player controlled
-      drone.addToScene(scene);
       const zOffset = (i - 2) * 3;
-      drone.mesh.position.set(x + 5, 13.5, z + zOffset);
+      const startPos = new THREE.Vector3(x + 5, 13.5, z + zOffset);
+      
+      const drone = new Drone(scene, physicsWorld, false, startPos); // Pass startPos
+      drone.addToScene(scene);
       drone.mesh.rotation.y = -Math.PI / 2; // Face outward
       dockedDrones.push(drone);
   }
@@ -163,9 +174,6 @@ function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackage
   // Position screen at the back of the roof, facing forward
   screen.position.set(x, 15, z - (BLOCK_SIZE * 0.3));
   screen.rotation.y = 0; // Face +Z (or check camera angle)
-  // Actually, let's make it face the camera's likely start position or just rotate it to be visible
-  // If camera is at (0, 20, 20) and looking at 0,0,0. Dark store is at 2,2 (center).
-  // Let's make it double sided or place it nicely.
   screenMat.side = THREE.DoubleSide;
   
   scene.add(screen);
@@ -176,10 +184,10 @@ function createDarkStore(scene, x, z, collidables, dockedDrones, conveyorPackage
   const sign = new THREE.Mesh(signGeo, signMat)
   sign.position.set(x, 10, z + (BLOCK_SIZE * 0.3) + 0.6)
   scene.add(sign)
-  collidables.push(sign)
+  createStaticBox(physicsWorld, sign.position, new THREE.Vector3(10, 2, 1))
 }
 
-function createResidentialBlock(scene, x, z, collidables) {
+function createResidentialBlock(scene, physicsWorld, x, z, deliveryZones) {
   // Plot Grass
   const plotGeo = new THREE.BoxGeometry(BLOCK_SIZE, 1, BLOCK_SIZE)
   const plotMat = new THREE.MeshStandardMaterial({ color: 0x4a6b4a }) // Muted Green
@@ -187,7 +195,23 @@ function createResidentialBlock(scene, x, z, collidables) {
   plot.position.set(x, 0.5, z)
   plot.receiveShadow = true
   scene.add(plot)
-  collidables.push(plot)
+  createStaticBox(physicsWorld, plot.position, new THREE.Vector3(BLOCK_SIZE, 1, BLOCK_SIZE))
+
+  // Delivery Zone (Visual + Logic)
+  const zoneGeo = new THREE.CylinderGeometry(2, 2, 0.1, 16);
+  const zoneMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.3 });
+  const zone = new THREE.Mesh(zoneGeo, zoneMat);
+  zone.position.set(x, 1.1, z + BLOCK_SIZE * 0.3); // Front of the house block
+  scene.add(zone);
+  
+  if (deliveryZones) {
+      deliveryZones.push({
+          mesh: zone,
+          position: zone.position,
+          radius: 2,
+          isOccupied: false
+      });
+  }
 
   // 4 Buildings per block
   const positions = [
@@ -213,13 +237,13 @@ function createResidentialBlock(scene, x, z, collidables) {
     building.castShadow = true
     building.receiveShadow = true
     scene.add(building)
-    collidables.push(building)
+    createStaticBox(physicsWorld, building.position, new THREE.Vector3(bWidth, bHeight, bDepth))
 
     // Windows (Texture simulation with simple geometry if needed, skipping for perf for now)
   })
 }
 
-function createPark(scene, x, z, collidables) {
+function createPark(scene, physicsWorld, x, z) {
   // Park Grass
   const parkGeo = new THREE.BoxGeometry(BLOCK_SIZE, 0.5, BLOCK_SIZE)
   const parkMat = new THREE.MeshStandardMaterial({ color: 0x228B22 }) // Forest Green
@@ -227,7 +251,7 @@ function createPark(scene, x, z, collidables) {
   park.position.set(x, 0.25, z)
   park.receiveShadow = true
   scene.add(park)
-  collidables.push(park)
+  createStaticBox(physicsWorld, park.position, new THREE.Vector3(BLOCK_SIZE, 0.5, BLOCK_SIZE))
 
   // Trees
   const trunkGeo = new THREE.CylinderGeometry(0.3, 0.3, 1.5)
@@ -244,14 +268,25 @@ function createPark(scene, x, z, collidables) {
     trunk.castShadow = true
     trunk.receiveShadow = true
     scene.add(trunk)
-    collidables.push(trunk)
+    createStaticBox(physicsWorld, trunk.position, new THREE.Vector3(0.6, 1.5, 0.6)) // Approx box for trunk
 
     const leaves = new THREE.Mesh(leavesGeo, leavesMat)
     leaves.position.set(tx, 3, tz)
     leaves.castShadow = true
     leaves.receiveShadow = true
     scene.add(leaves)
-    collidables.push(leaves)
+    // Leaves collision optional, maybe just trunk? Let's add it for fun.
+    createStaticBox(physicsWorld, leaves.position, new THREE.Vector3(1.5, 3, 1.5))
   }
+}
+
+function createStaticBox(physicsWorld, position, size) {
+    const body = new CANNON.Body({
+        mass: 0, // Static
+        type: CANNON.Body.STATIC,
+        shape: new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2))
+    });
+    body.position.copy(position);
+    physicsWorld.addBody(body);
 }
 
