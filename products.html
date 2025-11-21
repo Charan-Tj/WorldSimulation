@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InstaDrone - Products</title>
+  <link rel="stylesheet" href="/landing.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    .products-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr 350px;
+      min-height: 100vh;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-card);
+      padding: 2rem;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+    .category-item {
+      padding: 1rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.3s;
+    }
+    .category-item:hover, .category-item.active {
+      background: rgba(252, 128, 25, 0.1);
+      color: var(--primary);
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .product-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: transform 0.3s;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+    .product-img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      background: #333;
+    }
+    .product-info {
+      padding: 1rem;
+    }
+    .add-btn {
+      width: 100%;
+      padding: 0.5rem;
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: all 0.3s;
+    }
+    .add-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Cart Sidebar */
+    .cart-sidebar {
+      background: var(--bg-card);
+      padding: 2rem;
+      border-left: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-items {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin: 1rem 0;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .checkout-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--gradient);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="products-layout">
+    <aside class="sidebar">
+      <div class="logo" style="margin-bottom: 2rem;">Insta<span class="highlight">Drone</span></div>
+      <div class="category-item active">All Products</div>
+      <div class="category-item">Groceries</div>
+      <div class="category-item">Electronics</div>
+      <div class="category-item">Medicine</div>
+    </aside>
+
+    <main class="main-content">
+      <h2 style="margin-bottom: 2rem;">Fresh Arrivals</h2>
+      <div class="product-grid" id="product-grid">
+        <!-- Products will be injected here -->
+      </div>
+    </main>
+
+    <aside class="cart-sidebar">
+      <h3>Your Cart</h3>
+      <div class="cart-items" id="cart-items">
+        <p style="color: var(--text-dim); text-align: center; margin-top: 2rem;">Cart is empty</p>
+      </div>
+      <div class="cart-total">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+          <span>Total</span>
+          <span id="cart-total-amount">₹0.00</span>
+        </div>
+        <button class="checkout-btn" id="checkout-btn">Proceed to Checkout</button>
+      </div>
+    </aside>
+  </div>
+  <script type="module" src="/products.js"></script>
+</body>
+</html>
