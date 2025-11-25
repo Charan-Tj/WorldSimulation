@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone Simulation</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Drone Delivery Sim</title>
+    <link rel="stylesheet" href="/src/styles/style.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
-    <div id="ui" style="position: absolute; top: 20px; left: 20px; color: white; font-family: sans-serif; pointer-events: none;">
-        <h1>Score: <span id="score">0</span></h1>
-        <p>Controls: WASD to Move, Space/Shift to Ascend/Descend, Q/E to Rotate, F to Pickup/Drop</p>
-    </div>
-    <script type="module" src="/main.js"></script>
+    <div id="score">0</div>
+    <div id="map-container"></div>
+    <script type="module" src="/src/pages/simulation/main.js"></script>
 </body>
 </html>

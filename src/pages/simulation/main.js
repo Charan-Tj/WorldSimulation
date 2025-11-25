@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { Drone } from './src/drone.js';
-import { Package } from './src/package.js';
-import { createWorld } from './world.js';
-import { MissionManager } from './src/mission.js';
+import { Drone } from '../../modules/entities/drone.js';
+import { Package } from '../../modules/entities/package.js';
+import { createWorld } from '../../modules/core/world.js';
+import { MissionManager } from '../../modules/systems/mission.js';
+import { MapSystem } from '../../modules/core/MapSystem.js';
+import cityRegistry from '../../assets/city_registry.json';
+import mapUrl from '../../assets/city_map.svg';
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -74,6 +77,17 @@ const missionManager = new MissionManager(scene, packages, deliveryZones);
 const drone = new Drone(scene, physicsWorld, true); // Pass scene and physicsWorld
 drone.addToScene(scene);
 
+// --- Map System ---
+const mapSystem = new MapSystem({
+    bounds: [[-110, -110], [110, 110]], // Approximate world bounds based on 5x5 grid
+    imagePath: mapUrl,
+    registry: cityRegistry
+});
+
+// Add Trackables
+mapSystem.addTrackable(drone.mesh, 'player');
+dockedDrones.forEach(d => mapSystem.addTrackable(d.mesh, 'ally'));
+
 // --- Console Helpers ---
 window.playerDrone = drone;
 window.dockedDrones = dockedDrones;
@@ -83,6 +97,7 @@ window.spawnDrone = (x, y, z) => {
     const newDrone = new Drone(scene, physicsWorld, false, startPos);
     newDrone.addToScene(scene);
     dockedDrones.push(newDrone); // Add to array so it gets updated in animate()
+    mapSystem.addTrackable(newDrone.mesh, 'ally'); // Add to map
     console.log(`Spawned drone at (${x}, ${y}, ${z})`);
     return newDrone;
 };
@@ -110,6 +125,22 @@ window.commandAllDrones = (x, y, z) => {
     });
     console.log(`All drones moving to area (${x}, ${y}, ${z})`);
 };
+
+window.drawRoute = (points) => {
+    // Expects array of objects or arrays: [{x:0, z:0}, ...] or [[0,0], ...]
+    // Helper to normalize input
+    const normalizedPoints = points.map(p => {
+        if (Array.isArray(p)) return { x: p[0], z: p[1] };
+        return p;
+    });
+    mapSystem.drawRoute(normalizedPoints);
+    console.log("Route drawn on map.");
+};
+
+window.clearRoutes = () => {
+    mapSystem.clearRoutes();
+    console.log("Routes cleared.");
+};
 // -----------------------
 
 // Animation Loop
@@ -125,6 +156,7 @@ function animate() {
 
     drone.update(deltaTime);
     missionManager.update();
+    mapSystem.update(); // Update Map Markers
     
     // Update docked drones
     dockedDrones.forEach(d => d.update(deltaTime));
@@ -199,3 +231,4 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
