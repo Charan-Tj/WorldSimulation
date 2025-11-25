@@ -1,0 +1,68 @@
+body { margin: 0; overflow: hidden; }
+#score {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-family: monospace;
+    font-size: 24px;
+    pointer-events: none;
+    text-shadow: 1px 1px 2px black;
+    z-index: 10;
+}
+
+#map-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vmin;
+    height: 80vmin;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #444;
+    border-radius: 8px;
+    z-index: 100;
+    display: none; /* Hidden by default */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* Map Markers */
+.map-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 4px black;
+}
+
+.marker-player {
+    background-color: #ff3333; /* Red */
+    width: 0; 
+    height: 0; 
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 16px solid #ff3333;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    border-top: none;
+}
+
+.marker-ally {
+    background-color: #ffff33; /* Yellow */
+}
+
+.marker-enemy {
+    background-color: #ff33ff; /* Magenta */
+}
+
+/* Leaflet Popup Styles */
+.leaflet-popup-content-wrapper {
+    background: rgba(20, 20, 20, 0.9);
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+}
+.leaflet-popup-tip {
+    background: rgba(20, 20, 20, 0.9);
+}

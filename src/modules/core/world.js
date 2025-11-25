@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
-import { Drone } from './src/drone.js'
-import { Package } from './src/package.js'
+import { Drone } from '../entities/drone.js'
+import { Package } from '../entities/package.js'
 
 // Configuration
 const GRID_SIZE = 5 // 5x5 grid

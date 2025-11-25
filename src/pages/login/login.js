@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
           alert('Login Successful!');
-          window.location.href = data.user.role === 'admin' ? '/admin.html' : '/products.html';
+          window.location.href = data.user.role === 'admin' ? '/src/pages/admin/admin.html' : '/src/pages/products/products.html';
         } else {
           alert('Registration Successful! Please login.');
           switchBtn.click();

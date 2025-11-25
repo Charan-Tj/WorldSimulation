@@ -1,0 +1,227 @@
+[
+  {
+    "id": "SEC-NW-00",
+    "name": "Block 0-0",
+    "type": "Residential",
+    "grid_x": 0,
+    "grid_z": 0,
+    "sector": "NW",
+    "door_range": "001-004"
+  },
+  {
+    "id": "SEC-NW-01",
+    "name": "Block 0-1",
+    "type": "Residential",
+    "grid_x": 0,
+    "grid_z": 1,
+    "sector": "NW",
+    "door_range": "001-004"
+  },
+  {
+    "id": "SEC-Central-02",
+    "name": "Block 0-2",
+    "type": "Residential",
+    "grid_x": 0,
+    "grid_z": 2,
+    "sector": "Central",
+    "door_range": "001-004"
+  },
+  {
+    "id": "SEC-SW-03",
+    "name": "Block 0-3",
+    "type": "Residential",
+    "grid_x": 0,
+    "grid_z": 3,
+    "sector": "SW",
+    "door_range": "001-004"
+  },
+  {
+    "id": "SEC-SW-04",
+    "name": "Block 0-4",
+    "type": "Residential",
+    "grid_x": 0,
+    "grid_z": 4,
+    "sector": "SW",
+    "door_range": "001-004"
+  },
+  {
+    "id": "SEC-NW-10",
+    "name": "Block 1-0",
+    "type": "Residential",
+    "grid_x": 1,
+    "grid_z": 0,
+    "sector": "NW",
+    "door_range": "101-104"
+  },
+  {
+    "id": "SEC-NW-11",
+    "name": "Park NW",
+    "type": "Park",
+    "grid_x": 1,
+    "grid_z": 1,
+    "sector": "NW",
+    "door_range": "N/A"
+  },
+  {
+    "id": "SEC-Central-12",
+    "name": "Block 1-2",
+    "type": "Residential",
+    "grid_x": 1,
+    "grid_z": 2,
+    "sector": "Central",
+    "door_range": "101-104"
+  },
+  {
+    "id": "SEC-SW-13",
+    "name": "Park SW",
+    "type": "Park",
+    "grid_x": 1,
+    "grid_z": 3,
+    "sector": "SW",
+    "door_range": "N/A"
+  },
+  {
+    "id": "SEC-SW-14",
+    "name": "Block 1-4",
+    "type": "Residential",
+    "grid_x": 1,
+    "grid_z": 4,
+    "sector": "SW",
+    "door_range": "101-104"
+  },
+  {
+    "id": "SEC-Central-20",
+    "name": "Block 2-0",
+    "type": "Residential",
+    "grid_x": 2,
+    "grid_z": 0,
+    "sector": "Central",
+    "door_range": "201-204"
+  },
+  {
+    "id": "SEC-Central-21",
+    "name": "Block 2-1",
+    "type": "Residential",
+    "grid_x": 2,
+    "grid_z": 1,
+    "sector": "Central",
+    "door_range": "201-204"
+  },
+  {
+    "id": "SEC-Central-22",
+    "name": "Central Hub",
+    "type": "Dark Store",
+    "grid_x": 2,
+    "grid_z": 2,
+    "sector": "Central",
+    "door_range": "HUB-01"
+  },
+  {
+    "id": "SEC-Central-23",
+    "name": "Block 2-3",
+    "type": "Residential",
+    "grid_x": 2,
+    "grid_z": 3,
+    "sector": "Central",
+    "door_range": "201-204"
+  },
+  {
+    "id": "SEC-Central-24",
+    "name": "Block 2-4",
+    "type": "Residential",
+    "grid_x": 2,
+    "grid_z": 4,
+    "sector": "Central",
+    "door_range": "201-204"
+  },
+  {
+    "id": "SEC-NE-30",
+    "name": "Block 3-0",
+    "type": "Residential",
+    "grid_x": 3,
+    "grid_z": 0,
+    "sector": "NE",
+    "door_range": "301-304"
+  },
+  {
+    "id": "SEC-NE-31",
+    "name": "Park NE",
+    "type": "Park",
+    "grid_x": 3,
+    "grid_z": 1,
+    "sector": "NE",
+    "door_range": "N/A"
+  },
+  {
+    "id": "SEC-Central-32",
+    "name": "Block 3-2",
+    "type": "Residential",
+    "grid_x": 3,
+    "grid_z": 2,
+    "sector": "Central",
+    "door_range": "301-304"
+  },
+  {
+    "id": "SEC-SE-33",
+    "name": "Park SE",
+    "type": "Park",
+    "grid_x": 3,
+    "grid_z": 3,
+    "sector": "SE",
+    "door_range": "N/A"
+  },
+  {
+    "id": "SEC-SE-34",
+    "name": "Block 3-4",
+    "type": "Residential",
+    "grid_x": 3,
+    "grid_z": 4,
+    "sector": "SE",
+    "door_range": "301-304"
+  },
+  {
+    "id": "SEC-NE-40",
+    "name": "Block 4-0",
+    "type": "Residential",
+    "grid_x": 4,
+    "grid_z": 0,
+    "sector": "NE",
+    "door_range": "401-404"
+  },
+  {
+    "id": "SEC-NE-41",
+    "name": "Block 4-1",
+    "type": "Residential",
+    "grid_x": 4,
+    "grid_z": 1,
+    "sector": "NE",
+    "door_range": "401-404"
+  },
+  {
+    "id": "SEC-Central-42",
+    "name": "Block 4-2",
+    "type": "Residential",
+    "grid_x": 4,
+    "grid_z": 2,
+    "sector": "Central",
+    "door_range": "401-404"
+  },
+  {
+    "id": "SEC-SE-43",
+    "name": "Block 4-3",
+    "type": "Residential",
+    "grid_x": 4,
+    "grid_z": 3,
+    "sector": "SE",
+    "door_range": "401-404"
+  },
+  {
+    "id": "SEC-SE-44",
+    "name": "Student Hostel",
+    "type": "Hostel",
+    "grid_x": 4,
+    "grid_z": 4,
+    "sector": "SE",
+    "door_range": "H-100-H-200"
+  }
+]
