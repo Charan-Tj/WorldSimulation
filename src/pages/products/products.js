@@ -32,25 +32,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('checkout-btn').addEventListener('click', placeOrder);
 });
 
+const DEMO_PRODUCTS = [
+  { _id: 'd1', name: 'Organic Bananas', description: 'Fresh organic bananas, 6 pcs', price: 45, category: 'Groceries', image: 'https://images.unsplash.com/photo-1603833665858-e61d17a86224?w=300&h=300&fit=crop', stock: 120 },
+  { _id: 'd2', name: 'Farm Fresh Eggs', description: 'Free-range eggs, pack of 12', price: 89, category: 'Groceries', image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=300&h=300&fit=crop', stock: 80 },
+  { _id: 'd3', name: 'Whole Wheat Bread', description: 'Multigrain whole wheat loaf', price: 55, category: 'Groceries', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&h=300&fit=crop', stock: 60 },
+  { _id: 'd4', name: 'Full Cream Milk', description: 'Pasteurized, 1 Litre pack', price: 68, category: 'Groceries', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300&h=300&fit=crop', stock: 200 },
+  { _id: 'd5', name: 'Basmati Rice', description: 'Aged premium basmati, 1 kg', price: 135, category: 'Groceries', image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=300&fit=crop', stock: 150 },
+  { _id: 'd6', name: 'Extra Virgin Olive Oil', description: 'Cold pressed, 500 ml', price: 449, category: 'Groceries', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=300&h=300&fit=crop', stock: 40 },
+  { _id: 'd7', name: 'Wireless Earbuds', description: 'BT 5.3, ANC, 30hr battery', price: 1299, category: 'Electronics', image: 'https://images.unsplash.com/photo-1590658268037-6bf12f032f55?w=300&h=300&fit=crop', stock: 25 },
+  { _id: 'd8', name: 'Power Bank 10000mAh', description: 'Fast charge, USB-C', price: 899, category: 'Electronics', image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=300&h=300&fit=crop', stock: 35 },
+  { _id: 'd9', name: 'Paracetamol 500mg', description: 'Strip of 10 tablets', price: 25, category: 'Medicine', image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=300&fit=crop', stock: 500 },
+  { _id: 'd10', name: 'Vitamin C Tablets', description: '1000mg, 30 effervescent tabs', price: 199, category: 'Medicine', image: 'https://images.unsplash.com/photo-1550572017-edd951aa8f72?w=300&h=300&fit=crop', stock: 90 },
+  { _id: 'd11', name: 'Chicken Biryani', description: 'Hyderabadi dum biryani, 1 plate', price: 249, category: 'Food', image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&h=300&fit=crop', stock: 30 },
+  { _id: 'd12', name: 'Margherita Pizza', description: 'Hand-tossed, 10 inch', price: 299, category: 'Food', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=300&h=300&fit=crop', stock: 20 },
+  { _id: 'd13', name: 'Fresh Avocados', description: 'Ripe Hass avocados, 2 pcs', price: 180, category: 'Groceries', image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=300&h=300&fit=crop', stock: 45 },
+  { _id: 'd14', name: 'USB-C Fast Charger', description: '65W GaN, dual port', price: 1499, category: 'Electronics', image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=300&h=300&fit=crop', stock: 50 },
+  { _id: 'd15', name: 'Cold Brew Coffee', description: 'Ready to drink, 250ml', price: 149, category: 'Food', image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=300&h=300&fit=crop', stock: 70 },
+  { _id: 'd16', name: 'First Aid Kit', description: 'Essential home kit, 42 items', price: 349, category: 'Medicine', image: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=300&h=300&fit=crop', stock: 60 },
+];
+
 async function fetchProducts() {
   try {
     const res = await fetch(`${API_URL}/products`);
+    if (!res.ok) throw new Error('API unavailable');
     products = await res.json();
-    
-    // Enrich with mock data for UI (since DB only has basic fields)
-    products = products.map(p => ({
-      ...p,
-      weight: getRandomWeight(p.category),
-      time: Math.floor(Math.random() * 15) + 5 + ' MINS',
-      discount: Math.floor(Math.random() * 20) + 5,
-      originalPrice: Math.floor(p.price * 1.2)
-    }));
-    
-    filteredProducts = products;
-    renderProducts(products);
+    if (!products.length) throw new Error('No products from API');
   } catch (err) {
-    console.error('Error fetching products:', err);
+    console.warn('API unavailable, using demo products:', err.message);
+    products = DEMO_PRODUCTS;
   }
+    
+  // Enrich with mock data for UI
+  products = products.map(p => ({
+    ...p,
+    weight: p.weight || getRandomWeight(p.category),
+    time: Math.floor(Math.random() * 15) + 5 + ' MINS',
+    discount: Math.floor(Math.random() * 20) + 5,
+    originalPrice: Math.floor(p.price * 1.2)
+  }));
+    
+  filteredProducts = products;
+  renderProducts(products);
 }
 
 function getRandomWeight(category) {
