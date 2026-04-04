@@ -26,9 +26,9 @@
 
 ---
 
-## 🎯 Built for VibeCon 2026
+## 🎯 Built for a Competitive Builder Event
 
-> **VibeCon** (April 16–17, Bengaluru) is a high-signal builder competition that identifies India's top 300 builders. The grand prize? A **direct Y Combinator interview**. Projects are judged on **innovation, technical depth, clarity of thinking, and impact**.
+> *Built for a competitive builder event — April 2026, Bengaluru.* Projects are judged on **innovation, technical depth, clarity of thinking, and real-world impact**.
 
 InstaDrone was built to prove one thing: **the future of delivery doesn't need to cost human lives**.
 
@@ -319,8 +319,8 @@ If InstaDrone's model scaled to replace even **10%** of last-mile deliveries in 
 | Auth API (register/login/JWT) | ✅ Complete |
 | Products API + catalog UI | ✅ Complete |
 | Orders API + analytics | ✅ Complete |
-| Admin dashboard | 🔧 In Progress |
-| Autonomous delivery missions | 🔜 Next |
+| Admin dashboard | ✅ Complete |
+| Autonomous delivery missions | ✅ Complete |
 | Real-time order → drone auto-assignment | 🔜 Next |
 | Weather simulation effects | 📋 Planned |
 | Multi-dark-store routing | 📋 Planned |
@@ -328,12 +328,12 @@ If InstaDrone's model scaled to replace even **10%** of last-mile deliveries in 
 
 ---
 
-## 🏆 Why This Matters for VibeCon
+## 🏆 Why This Matters
 
 This isn't a toy demo. **InstaDrone tackles a problem that kills 177,000 people per year in India alone.**
 
-| VibeCon Criteria | How InstaDrone Delivers |
-|-----------------|----------------------|
+| Evaluation Criteria | How InstaDrone Delivers |
+|---------------------|------------------------|
 | **Innovation** | Full 3D physics simulation of drone delivery in-browser — no downloads, no plugins |
 | **Technical Depth** | Three.js + Cannon.js physics engine + Leaflet maps + Express API + MongoDB — 6 technologies orchestrated into one seamless experience |
 | **Impact** | Directly addresses delivery worker mortality and logistics carbon emissions — two of India's most pressing urban challenges |
@@ -349,5 +349,5 @@ This isn't a toy demo. **InstaDrone tackles a problem that kills 177,000 people 
     <img src="https://img.shields.io/badge/🚁_Try_InstaDrone-Live_Demo-00d4ff?style=for-the-badge&labelColor=0a0a23" alt="Try InstaDrone"/>
   </a>
   <br/><br/>
-  <sub>Built with ❤️ for VibeCon 2026 — Bengaluru</sub>
+  <sub>Built with ❤️ for a competitive builder event — April 2026, Bengaluru</sub>
 </p>
