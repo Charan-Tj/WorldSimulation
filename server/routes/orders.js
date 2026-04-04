@@ -51,4 +51,24 @@ router.get('/analytics/daily', async (req, res) => {
   }
 });
 
+// Update Order Status (Admin)
+router.patch('/:id/status', async (req, res) => {
+  try {
+    const allowed = ['pending', 'processing', 'delivering', 'delivered', 'cancelled'];
+    const { status } = req.body;
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

@@ -72,6 +72,7 @@ packages.push(pkg3);
 
 // Mission System
 const missionManager = new MissionManager(scene, packages, deliveryZones);
+missionManager.registerDrones(dockedDrones); // Starts autonomous delivery dispatch
 
 // Drone
 const drone = new Drone(scene, physicsWorld, true); // Pass scene and physicsWorld
@@ -89,8 +90,9 @@ mapSystem.addTrackable(drone.mesh, 'player');
 dockedDrones.forEach(d => mapSystem.addTrackable(d.mesh, 'ally'));
 
 // --- Console Helpers ---
-window.playerDrone = drone;
-window.dockedDrones = dockedDrones;
+window.playerDrone    = drone;
+window.dockedDrones   = dockedDrones;
+window.missionStates  = missionManager.droneStates; // Admin fleet panel reads this
 
 window.spawnDrone = (x, y, z) => {
     const startPos = new THREE.Vector3(x, y, z);
