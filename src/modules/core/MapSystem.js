@@ -53,6 +53,12 @@ export class MapSystem {
                 this.toggle();
             }
         });
+
+        // Close button
+        const closeBtn = document.getElementById('map-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.toggle());
+        }
     }
 
     addRegistryLayer() {
@@ -84,12 +90,17 @@ export class MapSystem {
 
             // Popup Content
             const popupContent = `
-                <div style="text-align: center;">
-                    <h3 style="margin: 0 0 5px 0;">${block.name}</h3>
-                    <div style="font-size: 0.9em; color: #aaa;">${block.type}</div>
-                    <div style="margin-top: 5px;">Sector: ${block.sector}</div>
-                    <div>Door Range: ${block.door_range}</div>
-                    <button onclick="console.log('Selected ${block.id}')" style="margin-top: 8px; padding: 4px 8px; cursor: pointer;">Select Location</button>
+                <div style="text-align: center; min-width: 160px">
+                    <div style="font-weight: 800; font-size: 1rem; margin-bottom: 4px">${block.name}</div>
+                    <div style="font-size: 0.75rem; color: #aeb5c0; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px">${block.type}</div>
+                    <div style="
+                        display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+                        font-size: 0.78rem; color: rgba(255,255,255,0.7);
+                        background: rgba(255,255,255,0.03); border-radius: 8px; padding: 6px;
+                    ">
+                        <div>Sector</div><div style="font-weight:700;color:white">${block.sector}</div>
+                        <div>Doors</div><div style="font-weight:700;color:white">${block.door_range}</div>
+                    </div>
                 </div>
             `;
 
@@ -156,15 +167,22 @@ export class MapSystem {
     }
 
     toggle() {
-        const container = document.getElementById('map-container');
+        const overlay = document.getElementById('map-overlay');
         this.isVisible = !this.isVisible;
-        container.style.display = this.isVisible ? 'block' : 'none';
+
+        if (overlay) {
+            if (this.isVisible) {
+                overlay.classList.add('visible');
+            } else {
+                overlay.classList.remove('visible');
+            }
+        }
         
         if (this.isVisible) {
             // Leaflet needs to know it's visible to size correctly
             setTimeout(() => {
                 this.map.invalidateSize();
-            }, 10);
+            }, 50);
         }
     }
 

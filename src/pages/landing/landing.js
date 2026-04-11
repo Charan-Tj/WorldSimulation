@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (viewDemoBtn) {
     viewDemoBtn.addEventListener('click', () => {
       // Redirect to the main simulation page
-      window.location.href = '/index.html';
+      window.location.href = '/simulation.html';
     });
   }
 

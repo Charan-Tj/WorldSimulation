@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaDrone — 3D Drone Delivery Simulation</title>
+    <link rel="stylesheet" href="/src/styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; overflow: hidden; }
+
+        /* ─── Top Nav Bar ───────────────────────────────────── */
+        #sim-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 48px;
+            background: rgba(15, 17, 26, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.2rem;
+            z-index: 200;
+            font-size: 0.85rem;
+        }
+        #sim-nav .nav-brand {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
+        }
+        #sim-nav .nav-brand span { color: #fc8019; }
+        #sim-nav .nav-links { display: flex; gap: 0.4rem; }
+        #sim-nav .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 0.82rem;
+        }
+        #sim-nav .nav-links a:hover { background: rgba(252,128,25,0.15); color: #fc8019; }
+        #sim-nav .nav-links a.active { background: rgba(252,128,25,0.2); color: #fc8019; }
+
+        /* ─── Onboarding Overlay ────────────────────────────── */
+        #onboarding {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 10, 18, 0.92);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .onboard-card {
+            background: linear-gradient(145deg, #1a1d2e, #13162a);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 2.5rem 3rem;
+            max-width: 680px;
+            width: 90%;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .onboard-badge {
+            display: inline-block;
+            background: rgba(252, 128, 25, 0.15);
+            color: #fc8019;
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            border: 1px solid rgba(252,128,25,0.3);
+            margin-bottom: 1rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .onboard-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.4rem;
+            line-height: 1.2;
+        }
+        .onboard-title span {
+            background: linear-gradient(135deg, #fc8019, #ff4d4d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .onboard-sub {
+            color: #aeb5c0;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .ctrl {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 0;
+        }
+        .ctrl kbd {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+            font-family: 'Outfit', monospace;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: white;
+            min-width: 32px;
+            text-align: center;
+        }
+        .ctrl-label {
+            color: #aeb5c0;
+            font-size: 0.85rem;
+        }
+
+        .onboard-highlight {
+            background: rgba(68, 204, 136, 0.08);
+            border: 1px solid rgba(68, 204, 136, 0.2);
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .onboard-highlight .highlight-title {
+            color: #44cc88;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.3rem;
+        }
+        .onboard-highlight p {
+            color: #aeb5c0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .onboard-start {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #fc8019, #ff4d4d);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .onboard-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(252, 128, 25, 0.4);
+        }
+        .onboard-skip {
+            display: block;
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.78rem;
+            margin-top: 0.7rem;
+            cursor: pointer;
+        }
+        .onboard-skip:hover { color: rgba(255,255,255,0.7); }
+
+        /* ─── HUD ───────────────────────────────────────────── */
+        #hud {
+            position: fixed;
+            top: 60px; left: 16px;
+            z-index: 150;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .hud-card {
+            background: rgba(15, 17, 26, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 0.8rem 1rem;
+            color: white;
+            min-width: 160px;
+        }
+        .hud-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #aeb5c0;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.3rem;
+        }
+        .hud-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .hud-val.orange { color: #fc8019; }
+        .hud-val.green  { color: #44cc88; }
+        .hud-sub {
+            font-size: 0.72rem;
+            color: #aeb5c0;
+            margin-top: 0.2rem;
+        }
+
+        /* ─── Controls Hint (bottom-left, persistent) ───── */
+        #controls-hint {
+            position: fixed;
+            bottom: 16px; left: 16px;
+            z-index: 150;
+            pointer-events: none;
+        }
+        .hint-card {
+            background: rgba(15, 17, 26, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 0.65rem 0.9rem;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.72rem;
+            line-height: 1.7;
+        }
+        .hint-card kbd {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: inherit;
+            font-weight: 700;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* ─── AI Activity Feed (bottom-right) ─────────── */
+        #activity-feed {
+            position: fixed;
+            bottom: 16px; right: 16px;
+            z-index: 150;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 280px;
+        }
+        .feed-item {
+            background: rgba(15, 17, 26, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.75rem;
+            color: #aeb5c0;
+            animation: feedIn 0.4s ease;
+            transition: opacity 0.4s;
+        }
+        .feed-item .feed-drone { color: #fc8019; font-weight: 700; }
+        .feed-item .feed-action { color: #44cc88; }
+        @keyframes feedIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* ─── Score (hidden default, shown via HUD now) ── */
+        #score { display: none; }
+
+        /* ─── Map Overlay ─────────────────────────────────── */
+        #map-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(5, 7, 15, 0.6);
+            backdrop-filter: blur(6px);
+        }
+        #map-overlay.visible { display: flex; }
+
+        #map-panel {
+            width: 85vmin;
+            max-width: 700px;
+            background: linear-gradient(145deg, #161928, #0f111a);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+            animation: mapIn 0.3s ease;
+        }
+        @keyframes mapIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        #map-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1.2rem;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        #map-header .map-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #map-header .map-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.5);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255,255,255,0.3);
+        }
+        .legend-dot.red { background: #ff3333; }
+        .legend-dot.yellow { background: #ffdd33; }
+        .legend-dot.green { background: #44cc88; }
+        .legend-dot.orange { background: #fc8019; }
+        #map-close {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        #map-close:hover { background: rgba(255,255,255,0.05); color: white; }
+
+        #map-container {
+            width: 100%;
+            height: 70vmin;
+            max-height: 560px;
+            background: #0c0e18;
+            z-index: 301;
+        }
+
+        /* ─── Map Markers ────────────────────────────────── */
+        .map-marker {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 0 6px rgba(0,0,0,0.5), 0 0 12px rgba(255,255,255,0.1);
+            transition: transform 0.1s;
+        }
+        .marker-player {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            border-left: 7px solid transparent !important;
+            border-right: 7px solid transparent !important;
+            border-bottom: 14px solid #ff3333 !important;
+            border-radius: 0 !important;
+            filter: drop-shadow(0 0 4px rgba(255,50,50,0.6));
+        }
+        .marker-ally {
+            background-color: #ffdd33;
+            box-shadow: 0 0 6px rgba(255,221,51,0.4);
+        }
+        .marker-enemy {
+            background-color: #ff33ff;
+        }
+
+        /* ─── Leaflet Popup ───────────────────────────────── */
+        .leaflet-popup-content-wrapper {
+            background: linear-gradient(145deg, #1e2235, #161928) !important;
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            padding: 4px !important;
+        }
+        .leaflet-popup-content {
+            margin: 10px 14px !important;
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 0.85rem !important;
+            line-height: 1.5 !important;
+        }
+        .leaflet-popup-tip {
+            background: #1e2235 !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+        }
+        .leaflet-popup-close-button {
+            color: rgba(255,255,255,0.4) !important;
+        }
+        .leaflet-popup-close-button:hover {
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Navigation Bar ── -->
+    <nav id="sim-nav">
+        <div class="nav-brand">🚁 Insta<span>Drone</span></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/simulation.html" class="active">Simulation</a>
+            <a href="/src/pages/products/products.html">Products</a>
+            <a href="/src/pages/admin/admin.html">Admin</a>
+        </div>
+    </nav>
+
+    <!-- ── Onboarding Overlay ── -->
+    <div id="onboarding">
+        <div class="onboard-card">
+            <div class="onboard-badge">🎮 Interactive 3D Simulation</div>
+            <div class="onboard-title">Autonomous <span>Drone Delivery</span></div>
+            <p class="onboard-sub">
+                You are inside a physics-driven 3D city. A fleet of <strong>5 AI drones</strong> is autonomously
+                picking up packages from the central <strong>Dark Store</strong> and delivering them to residential
+                zones across the city — all in real time.
+            </p>
+
+            <div class="onboard-highlight">
+                <div class="highlight-title">👀 What to Watch</div>
+                <p>
+                    <strong>AI drones (yellow on map)</strong> will begin autonomous deliveries automatically.
+                    Watch them ascend, pick up packages from the rooftop conveyor, fly across the city,
+                    and drop packages at the glowing green delivery zones. The score tracks live deliveries.
+                </p>
+            </div>
+
+            <div style="color:#aeb5c0;font-size:0.82rem;font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.04em">
+                Your Controls (Player Drone)
+            </div>
+            <div class="controls-grid">
+                <div class="ctrl"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span class="ctrl-label">Move</span></div>
+                <div class="ctrl"><kbd>Space</kbd> <span class="ctrl-label">Ascend</span></div>
+                <div class="ctrl"><kbd>Q</kbd><kbd>E</kbd> <span class="ctrl-label">Rotate</span></div>
+                <div class="ctrl"><kbd>Shift</kbd> <span class="ctrl-label">Descend</span></div>
+                <div class="ctrl"><kbd>F</kbd> <span class="ctrl-label">Pick up / Drop package</span></div>
+                <div class="ctrl"><kbd>M</kbd> <span class="ctrl-label">Toggle city map</span></div>
+                <div class="ctrl"><kbd>R</kbd> <span class="ctrl-label">Reset drone position</span></div>
+                <div class="ctrl"><kbd>H</kbd> <span class="ctrl-label">Toggle this help</span></div>
+            </div>
+
+            <button class="onboard-start" id="start-sim">▶ Enter Simulation</button>
+            <div class="onboard-skip" id="skip-onboard">Skip intro — I've been here before</div>
+        </div>
+    </div>
+
+    <!-- ── HUD (shown after onboarding dismissed) ── -->
+    <div id="hud" style="display:none">
+        <div class="hud-card">
+            <div class="hud-title">Deliveries</div>
+            <div class="hud-val orange" id="hud-score">0</div>
+            <div class="hud-sub">Successful drops</div>
+        </div>
+        <div class="hud-card">
+            <div class="hud-title">AI Fleet</div>
+            <div class="hud-val green" id="hud-fleet">5 Active</div>
+            <div class="hud-sub" id="hud-fleet-status">Dispatching…</div>
+        </div>
+        <div class="hud-card">
+            <div class="hud-title">FPS</div>
+            <div class="hud-val" id="hud-fps" style="font-size:1.2rem">—</div>
+        </div>
+    </div>
+
+    <!-- ── Controls Hint (persistent) ── -->
+    <div id="controls-hint" style="display:none">
+        <div class="hint-card">
+            <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move
+            · <kbd>Space</kbd>/<kbd>Shift</kbd> Up/Down
+            · <kbd>Q</kbd><kbd>E</kbd> Rotate<br>
+            <kbd>F</kbd> Pickup · <kbd>M</kbd> Map · <kbd>R</kbd> Reset · <kbd>H</kbd> Help
+        </div>
+    </div>
+
+    <!-- ── Activity Feed ── -->
+    <div id="activity-feed"></div>
+
+    <!-- Hidden original score element for mission.js compatibility -->
+    <div id="score">0</div>
+
+    <!-- Map Overlay -->
+    <div id="map-overlay">
+        <div id="map-panel">
+            <div id="map-header">
+                <div class="map-title">🗺️ City Operations Map</div>
+                <div class="map-legend">
+                    <div class="legend-item"><div class="legend-dot red"></div> You</div>
+                    <div class="legend-item"><div class="legend-dot yellow"></div> AI Drones</div>
+                    <div class="legend-item"><div class="legend-dot green"></div> Delivery Zones</div>
+                    <div class="legend-item"><div class="legend-dot orange"></div> Dark Store</div>
+                </div>
+                <button id="map-close" title="Close (M)">✕</button>
+            </div>
+            <div id="map-container"></div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/pages/simulation/main.js"></script>
+</body>
+</html>

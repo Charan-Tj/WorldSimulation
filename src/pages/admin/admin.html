@@ -359,12 +359,31 @@
       </div>
 
       <div class="sidebar-footer">
-        <a href="/">← Back to Simulation</a>
+        <a href="/">🏠 Home</a>
+        <a href="/simulation.html">🚁 Simulation</a>
+        <a href="/src/pages/products/products.html">🛒 Products</a>
       </div>
     </aside>
 
     <!-- ── Main ── -->
     <main class="content">
+
+      <!-- Reviewer Context Banner -->
+      <div id="reviewer-banner" style="
+        background: linear-gradient(135deg, rgba(252,128,25,0.1), rgba(255,77,77,0.06));
+        border: 1px solid rgba(252,128,25,0.2); border-radius: 14px;
+        padding: 0.8rem 1.2rem; margin-bottom: 1.5rem;
+        font-size: 0.83rem; color: rgba(255,255,255,0.8);
+        display: flex; align-items: center; justify-content: space-between;
+      ">
+        <div>
+          <strong style="color:#fc8019">👋 For Reviewers:</strong>
+          This is the <strong>operations dashboard</strong>. It shows real-time order data, revenue analytics,
+          drone fleet status, and product inventory — all powered by the <strong>Express + MongoDB backend API</strong>.
+          Click <strong>Fleet Status</strong> to see live drone mission phases from the simulation.
+        </div>
+        <span onclick="document.getElementById('reviewer-banner').style.display='none'" style="cursor:pointer;color:rgba(255,255,255,0.4);font-weight:bold;font-size:1.1rem;margin-left:1rem">×</span>
+      </div>
 
       <!-- ══ Overview ══════════════════════════════════════════════ -->
       <div id="overview" class="section active">
