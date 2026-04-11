@@ -218,6 +218,7 @@
       line-height: 1.3;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
@@ -323,16 +324,15 @@
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header class="header">
     <div class="brand">
       Insta<span class="highlight">Drone</span>
     </div>
-    <div class="location-pill">
-      <span>📍</span> 
-      <span style="font-weight: 700; color: white;">Home</span> 
-      <span>- 123, Cyber City, Tech Park...</span>
-      <span>▼</span>
+    <div style="display:flex;gap:0.3rem;align-items:center">
+      <a href="/" style="color:rgba(255,255,255,0.6);text-decoration:none;padding:0.4rem 0.7rem;border-radius:8px;font-weight:600;font-size:0.82rem">Home</a>
+      <a href="/simulation.html" style="color:rgba(255,255,255,0.6);text-decoration:none;padding:0.4rem 0.7rem;border-radius:8px;font-weight:600;font-size:0.82rem">Simulation</a>
+      <a href="/src/pages/products/products.html" style="color:var(--primary);text-decoration:none;padding:0.4rem 0.7rem;border-radius:8px;font-weight:600;font-size:0.82rem;background:rgba(252,128,25,0.12)">Products</a>
+      <a href="/src/pages/admin/admin.html" style="color:rgba(255,255,255,0.6);text-decoration:none;padding:0.4rem 0.7rem;border-radius:8px;font-weight:600;font-size:0.82rem">Admin</a>
     </div>
     <div class="search-bar">
       <input type="text" class="search-input" placeholder="Search for 'Biryani', 'Coke', 'Chips'..." id="search-input">
@@ -342,6 +342,22 @@
       <div style="cursor: pointer;">🛒 Cart</div>
     </div>
   </header>
+
+  <!-- Reviewer Context Banner -->
+  <div id="reviewer-banner" style="
+    background: linear-gradient(135deg, rgba(252,128,25,0.1), rgba(255,77,77,0.06));
+    border-bottom: 1px solid rgba(252,128,25,0.2);
+    padding: 0.7rem 2rem; font-size: 0.83rem; color: rgba(255,255,255,0.8);
+    display: flex; align-items: center; justify-content: space-between;
+  ">
+    <div>
+      <strong style="color:#fc8019">👋 For Reviewers:</strong>
+      This is the <strong>customer ordering interface</strong>. Users browse products, add to cart, and check out —
+      orders are then assigned to drones in the simulation for autonomous delivery.
+      The catalog is populated from the <strong>MongoDB API</strong>.
+    </div>
+    <span onclick="document.getElementById('reviewer-banner').style.display='none'" style="cursor:pointer;color:rgba(255,255,255,0.4);font-weight:bold;font-size:1.1rem;margin-left:1rem">×</span>
+  </div>
 
   <div class="products-layout">
     <!-- Sidebar -->

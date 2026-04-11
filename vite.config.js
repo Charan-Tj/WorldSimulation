@@ -12,8 +12,8 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        landing: resolve(__dirname, 'src/pages/landing/landing.html'),
+        landing: resolve(__dirname, 'index.html'),
+        simulation: resolve(__dirname, 'simulation.html'),
         login: resolve(__dirname, 'src/pages/login/login.html'),
         admin: resolve(__dirname, 'src/pages/admin/admin.html'),
         products: resolve(__dirname, 'src/pages/products/products.html'),
@@ -21,6 +21,6 @@ export default defineConfig({
     },
   },
   server: {
-    open: '/src/pages/landing/landing.html',
+    open: '/',
   },
 });

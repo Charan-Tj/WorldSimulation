@@ -145,8 +145,96 @@ window.clearRoutes = () => {
 };
 // -----------------------
 
-// Animation Loop
+// ── Onboarding ──────────────────────────────────────────────────────────────
+const onboarding    = document.getElementById('onboarding');
+const startBtn      = document.getElementById('start-sim');
+const skipBtn       = document.getElementById('skip-onboard');
+const hudEl         = document.getElementById('hud');
+const controlsHint  = document.getElementById('controls-hint');
+
+function dismissOnboarding() {
+    if (onboarding) {
+        onboarding.style.opacity = '0';
+        onboarding.style.transition = 'opacity 0.35s';
+        setTimeout(() => { onboarding.style.display = 'none'; }, 350);
+    }
+    if (hudEl) hudEl.style.display = 'flex';
+    if (controlsHint) controlsHint.style.display = 'block';
+}
+
+if (startBtn) startBtn.addEventListener('click', dismissOnboarding);
+if (skipBtn)  skipBtn.addEventListener('click', dismissOnboarding);
+
+// H key re-opens onboarding
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyH') {
+        if (onboarding.style.display === 'none') {
+            onboarding.style.display = 'flex';
+            onboarding.style.opacity = '1';
+        } else {
+            dismissOnboarding();
+        }
+    }
+});
+
+// ── Activity Feed ───────────────────────────────────────────────────────────
+const DRONE_NAMES = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'];
+const feedEl = document.getElementById('activity-feed');
+let lastPhases = new Map();
+
+function pushFeedItem(msg) {
+    if (!feedEl) return;
+    const item = document.createElement('div');
+    item.className = 'feed-item';
+    item.innerHTML = msg;
+    feedEl.appendChild(item);
+    // Keep max 5 items
+    while (feedEl.children.length > 5) {
+        feedEl.removeChild(feedEl.firstChild);
+    }
+    // Auto-remove after 6s
+    setTimeout(() => {
+        item.style.opacity = '0';
+        setTimeout(() => item.remove(), 400);
+    }, 6000);
+}
+
+function checkFeedUpdates() {
+    if (!missionManager.droneStates) return;
+    missionManager.droneStates.forEach((state, drone) => {
+        const idx = dockedDrones.indexOf(drone);
+        if (idx < 0) return;
+        const name = DRONE_NAMES[idx] || `D${idx}`;
+        const prev = lastPhases.get(drone);
+        const curr = state.phase;
+
+        if (prev !== curr) {
+            lastPhases.set(drone, curr);
+            // Only announce meaningful transitions
+            switch (curr) {
+                case 'ascending_to_pickup':
+                    pushFeedItem(`<span class="feed-drone">🚁 ${name}</span> dispatched — heading to pickup`);
+                    break;
+                case 'picking_up':
+                    pushFeedItem(`<span class="feed-drone">🚁 ${name}</span> <span class="feed-action">picked up package</span>`);
+                    break;
+                case 'flying_to_zone':
+                    pushFeedItem(`<span class="feed-drone">🚁 ${name}</span> en route to delivery zone`);
+                    break;
+                case 'dropping':
+                    pushFeedItem(`<span class="feed-drone">🚁 ${name}</span> <span class="feed-action">delivered! ✅</span>`);
+                    break;
+                case 'returning':
+                    pushFeedItem(`<span class="feed-drone">🚁 ${name}</span> returning to dock`);
+                    break;
+            }
+        }
+    });
+}
+
+// ── Animation Loop ──────────────────────────────────────────────────────────
 const clock = new THREE.Clock();
+let frameCount = 0;
 
 function animate() {
     requestAnimationFrame(animate);
@@ -168,10 +256,7 @@ function animate() {
     });
 
     // Camera follow
-    // Simple 3rd person follow
-    const offset = new THREE.Vector3(0, 5, 10); // Behind and up
-    
-    // Better: Rotate offset by drone's Y rotation
+    const offset = new THREE.Vector3(0, 5, 10);
     const yaw = drone.mesh.rotation.y;
     
     if (!isNaN(yaw)) {
@@ -180,49 +265,36 @@ function animate() {
         camera.position.lerp(targetPos, 0.1);
         camera.lookAt(drone.mesh.position);
     } else {
-        // Fallback if yaw is NaN
         camera.position.set(0, 20, 20);
         camera.lookAt(0, 0, 0);
     }
 
-    // Debug Logging (On Screen)
-    const debugEl = document.getElementById('debug-info') || createDebugOverlay();
-    
-    let droneInfo = `
-        Frame: ${renderer.info.render.frame}<br>
-        <b>Player:</b> ${formatVec(drone.mesh.position)}<br>
-        Yaw: ${drone.yaw !== undefined ? drone.yaw.toFixed(2) : 'NaN'}<br>
-        Keys: Q:${drone.keys.q} E:${drone.keys.e}<br>
-        FPS: ${(1/deltaTime).toFixed(0)}<br>
-        <hr>
-        <b>Docked Drones (${dockedDrones.length}):</b><br>
-    `;
+    // ── HUD Updates (every 10 frames for perf) ──
+    frameCount++;
+    if (frameCount % 10 === 0) {
+        const scoreEl = document.getElementById('hud-score');
+        const fpsEl   = document.getElementById('hud-fps');
+        const fleetEl = document.getElementById('hud-fleet-status');
 
-    dockedDrones.forEach((d, i) => {
-        droneInfo += `D${i}: ${formatVec(d.mesh.position)}<br>`;
-    });
+        if (scoreEl) scoreEl.textContent = missionManager.score || 0;
+        if (fpsEl)   fpsEl.textContent = (1 / deltaTime).toFixed(0);
 
-    debugEl.innerHTML = droneInfo;
+        // Count active missions
+        if (fleetEl && missionManager.droneStates) {
+            let active = 0;
+            missionManager.droneStates.forEach(s => { if (s.phase !== 'idle') active++; });
+            fleetEl.textContent = active > 0 ? `${active} drone${active > 1 ? 's' : ''} on mission` : 'All docked — waiting';
+        }
+
+        // Sync hidden #score for MissionManager compatibility
+        const hiddenScore = document.getElementById('score');
+        if (hiddenScore) hiddenScore.textContent = missionManager.score || 0;
+
+        // Check for feed updates
+        checkFeedUpdates();
+    }
 
     renderer.render(scene, camera);
-}
-
-function createDebugOverlay() {
-    const div = document.createElement('div');
-    div.id = 'debug-info';
-    div.style.position = 'absolute';
-    div.style.top = '10px';
-    div.style.right = '10px';
-    div.style.color = 'white';
-    div.style.fontFamily = 'monospace';
-    div.style.backgroundColor = 'rgba(0,0,0,0.5)';
-    div.style.padding = '10px';
-    document.body.appendChild(div);
-    return div;
-}
-
-function formatVec(v) {
-    return `(${v.x.toFixed(2)}, ${v.y.toFixed(2)}, ${v.z.toFixed(2)})`;
 }
 
 animate();
