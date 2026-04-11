@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = 'https://instadrone.onrender.com/api/auth';
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('login-form');
